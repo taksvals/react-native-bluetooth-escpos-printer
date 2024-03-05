@@ -386,8 +386,11 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
     public void printQRCode(String content, int size, int correctionLevel, @Nullable ReadableMap options) {
         try {
             int leftPadding = 0;
+            Log.i(TAG, "OPTIONS:" + options);
+
             if(options!=null){
                 leftPadding = options.hasKey("left")?options.getInt("left") : 0;
+                Log.i(TAG, "LEFT PADDING:" + leftPadding);
             }
             Log.i(TAG, "生成的文本：" + content);
             // 把输入的文本转为二维码
@@ -399,6 +402,9 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
 
             int width = bitMatrix.getWidth();
             int height = bitMatrix.getHeight();
+
+            Log.i(TAG, "width:" + width);
+            Log.i(TAG, "height:" + height);
 
             System.out.println("w:" + width + "h:"
                     + height);
@@ -417,7 +423,7 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
             Bitmap bitmap = Bitmap.createBitmap(width, height,
                     Bitmap.Config.ARGB_8888);
 
-            bitmap.setPixels(pixels, 250, width, 250, 250, width, height); // ???
+            bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
             //TODO: may need a left padding to align center.
             byte[] data = PrintPicture.POS_PrintBMP(bitmap, size, 0, 250);
@@ -425,8 +431,7 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
             sendDataByte(Command.LF);
             sendDataByte(data);
             sendDataByte(PrinterCommand.POS_Set_PrtAndFeedPaper(30));
-            sendDataByte(PrinterCommand.POS_Set_Cut(1));
-            sendDataByte(PrinterCommand.POS_Set_PrtInit());
+
             // if (sendDataByte(data)) {
             //     promise.resolve(null);
             // } else {
