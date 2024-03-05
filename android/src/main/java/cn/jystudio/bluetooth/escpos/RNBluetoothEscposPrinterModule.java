@@ -383,15 +383,8 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
     }
 
     @ReactMethod
-    public void printQRCode(String content, int size, int correctionLevel, @Nullable ReadableMap options) {
+    public void printQRCode(String content, int size, int correctionLevel, final Promise promise) {
         try {
-            int leftPadding = 0;
-            Log.i(TAG, "OPTIONS:" + options);
-
-            if(options!=null){
-                leftPadding = options.hasKey("left")?options.getInt("left") : 0;
-                Log.i(TAG, "LEFT PADDING:" + leftPadding);
-            }
             Log.i(TAG, "生成的文本：" + content);
             // 把输入的文本转为二维码
             Hashtable<EncodeHintType, Object> hints = new Hashtable<EncodeHintType, Object>();
@@ -402,9 +395,6 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
 
             int width = bitMatrix.getWidth();
             int height = bitMatrix.getHeight();
-
-            Log.i(TAG, "width:" + width);
-            Log.i(TAG, "height:" + height);
 
             System.out.println("w:" + width + "h:"
                     + height);
@@ -426,19 +416,14 @@ public class RNBluetoothEscposPrinterModule extends ReactContextBaseJavaModule
             bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
             //TODO: may need a left padding to align center.
-            byte[] data = PrintPicture.POS_PrintBMP(bitmap, size, 0, 250);
-            sendDataByte(Command.ESC_Init);
-            sendDataByte(Command.LF);
-            sendDataByte(data);
-            sendDataByte(PrinterCommand.POS_Set_PrtAndFeedPaper(30));
-
-            // if (sendDataByte(data)) {
-            //     promise.resolve(null);
-            // } else {
-            //     promise.reject("COMMAND_NOT_SEND");
-            // }
+            byte[] data = PrintPicture.POS_PrintBMP(bitmap, size, 0, 0);
+            if (sendDataByte(data)) {
+                promise.resolve(null);
+            } else {
+                promise.reject("COMMAND_NOT_SEND");
+            }
         } catch (Exception e) {
-            // promise.reject(e.getMessage(), e);
+            promise.reject(e.getMessage(), e);
         }
     }
 
